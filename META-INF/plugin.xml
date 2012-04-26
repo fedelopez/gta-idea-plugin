@@ -1,0 +1,29 @@
+<idea-plugin version="2">
+    <name>gta-idea-plugin</name>
+    <description>IntelliJ plugin to automatically update the GTA build settings file.</description>
+    <change-notes>Added the possibility to update the settings file in order launch the tests for a given package.</change-notes>
+    <version>1.2</version>
+    <vendor>Fede Lopez Laborda</vendor>
+    <idea-version since-build="7000"/>
+
+    <application-components>
+        <component>
+            <implementation-class>org.gta.idea.SettingsApplicationComponent</implementation-class>
+        </component>
+    </application-components>
+
+    <project-components>
+        <!-- Add your project components here -->
+    </project-components>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="SettingsUpdater" class="org.gta.idea.SettingsUpdaterAction" text="Update GTA Settings">
+            <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift G"/>
+        </action>
+    </actions>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+</idea-plugin>

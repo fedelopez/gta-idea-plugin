@@ -1,0 +1,27 @@
+# This file is used to control which packages, classes or
+# methods are tested, using the GrandTestAuto testing
+# tool. Details can be found in Chapter 19.
+
+CLASSES_ROOT=..\\classes
+
+LOG_TO_CONSOLE=true
+
+LOG_TO_FILE=t
+
+RUN_UNIT_TESTS=f
+RUN_FUNCTION_TESTS=f
+RUN_LOAD_TESTS=f
+
+SINGLE_PACKAGE=rippledown.foobar
+FIRST_PACKAGE=rippledown.bar
+LAST_PACKAGE=rippledown.foo
+
+SINGLE_CLASS=Foo
+FIRST_CLASS=FirstFoo
+LAST_CLASS=LastFoo
+
+SINGLE_METHOD=doTheFoo
+FIRST_METHOD=firstDoTheFoo
+LAST_METHOD=thenDoTheBar
+
+FAIL_FAST=f
