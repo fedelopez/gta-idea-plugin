@@ -5,3 +5,5 @@ IntelliJ plugin to facilitate the edition of the Grand Test Auto settings file. 
 GTA is a powerful open source Java test harness developed by Tim Lavers.
 
 Visit http://grandtestauto.org/ to get more information about the Grand Test Auto test harness.
+
+You can use this project as Maven archetype to build your own IntelliJ plugin.
