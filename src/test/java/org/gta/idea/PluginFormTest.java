@@ -9,7 +9,9 @@ import org.uispec4j.interception.FileChooserHandler;
 import org.uispec4j.interception.WindowHandler;
 import org.uispec4j.interception.WindowInterceptor;
 
-/** @author fede lopez */
+/**
+ * @author fede lopez
+ */
 public class PluginFormTest extends UISpecTestCase {
 
     private TextBox txtFilePath;
@@ -36,6 +38,21 @@ public class PluginFormTest extends UISpecTestCase {
 
         filePath = FilenameUtils.normalize(FilenameUtils.getPath(filePath));
         assertTrue(txtFilePath.getText().contains("GTASettings.txt"));
+    }
+
+    public void testModulePathVariable() {
+
+        txtFilePath.setText("$MODULE_DIR$/src/GTASettings.txt");
+
+        assertTrue(pluginForm.isModified());
+    }
+
+    public void testInvalidModulePathVariable() {
+
+        txtFilePath.setText("MODULE_DIR/src/GTASettings.txt");
+
+        assertFalse(pluginForm.isModified());
+
     }
 
     public void testIsModified() {

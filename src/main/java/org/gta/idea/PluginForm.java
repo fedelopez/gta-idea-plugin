@@ -82,11 +82,19 @@ public class PluginForm {
                 isModified = true;
                 return;
             }
-            File file = new File(text);
-            isModified = file.exists() && file.isFile();
+            if (isUsingPathVariables(text)) {
+                isModified = true;
+            } else {
+                File file = new File(text);
+                isModified = file.exists() && file.isFile();
+            }
         } catch (BadLocationException e) {
             // just do nothing
         }
+    }
+
+    private boolean isUsingPathVariables(String text) {
+        return text.startsWith(SettingsUpdaterAction.MODULE_DIR);
     }
 
     private static class GTAFileFilter extends javax.swing.filechooser.FileFilter {

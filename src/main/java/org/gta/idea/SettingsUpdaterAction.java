@@ -6,20 +6,26 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.DataConstantsEx;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
+import org.apache.commons.io.FilenameUtils;
 import org.gta.SettingsUpdater;
 
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** @author fede lopez */
+/**
+ * @author fede lopez
+ */
 public class SettingsUpdaterAction extends AnAction {
 
     private static final Logger LOG = Logger.getLogger(SettingsUpdaterAction.class.getName());
+
+    public static final String MODULE_DIR = "$MODULE_DIR$";
 
     private static final String PLUGIN_NOT_CONFIGURED = "GTA Idea plugin is not properly configured.";
     private static final String PATH_MISSING = "Please provide a valid GTA settings file.";
@@ -30,6 +36,7 @@ public class SettingsUpdaterAction extends AnAction {
     private String packageName;
     private String className;
     private String methodName;
+    private Module module;
 
     @Override
     public void actionPerformed(AnActionEvent event) {
@@ -43,6 +50,7 @@ public class SettingsUpdaterAction extends AnAction {
         }
         DataContext dataContext = event.getDataContext();
         Object data = dataContext.getData(DataConstantsEx.PSI_FILE);
+        module = (Module) dataContext.getData(DataConstantsEx.MODULE);
         if (data instanceof PsiJavaFile) {
             PsiJavaFile javaFile = (PsiJavaFile) data;
             Object element = dataContext.getData(DataConstantsEx.PSI_ELEMENT);
@@ -73,7 +81,11 @@ public class SettingsUpdaterAction extends AnAction {
     }
 
     private File gtaSettingsFile() {
-        return new File(getGtaApplicationComponent().getGTASettingsFilePath());
+        String filePath = getGtaApplicationComponent().getGTASettingsFilePath();
+        if (filePath.startsWith(MODULE_DIR)) {
+            filePath = filePath.replace(MODULE_DIR, FilenameUtils.getFullPath(module.getModuleFilePath()));
+        }
+        return new File(filePath);
     }
 
     private void configureForPackage(SettingsUpdater.Builder builder) {
@@ -124,6 +136,6 @@ public class SettingsUpdaterAction extends AnAction {
 
     private boolean settingsFileExists() {
         String path = getGtaApplicationComponent().getGTASettingsFilePath();
-        return path != null && new File(path).exists();
+        return path != null && (path.startsWith(MODULE_DIR) || new File(path).exists());
     }
 }

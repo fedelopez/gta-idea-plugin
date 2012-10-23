@@ -1,0 +1,4 @@
+# Ignore IntelliJ files
+*.iml
+*.ipr
+*.iws
