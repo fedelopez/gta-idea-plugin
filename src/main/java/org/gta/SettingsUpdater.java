@@ -1,5 +1,6 @@
 package org.gta;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -8,12 +9,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.util.Properties;
-import java.util.logging.Logger;
 
-/** @author fede lopez */
+/**
+ * @author fede lopez
+ */
 public class SettingsUpdater {
 
-    private static final Logger LOG = Logger.getLogger(SettingsUpdater.class.getName());
+    private static final Logger LOG = Logger.getInstance(SettingsUpdater.class.getName());
 
     private final File gtaSettingsFile;
     private final String packageName;
@@ -113,7 +115,7 @@ public class SettingsUpdater {
             inputStream = new FileInputStream(gtaSettingsFile.getAbsolutePath());
             properties.load(inputStream);
         } catch (IOException e) {
-            LOG.warning("Could not create properties file from GTA Settings file: " + e.getLocalizedMessage());
+            LOG.warn("Could not create properties file from GTA Settings file: " + e.getLocalizedMessage());
         } finally {
             IOUtils.closeQuietly(inputStream);
         }
@@ -125,9 +127,9 @@ public class SettingsUpdater {
             fileOutputStream = new FileOutputStream(gtaSettingsFile);
             properties.store(fileOutputStream, gtaSettingsFile.getAbsolutePath());
         } catch (FileNotFoundException e) {
-            LOG.warning("GTA Settings file not found!");
+            LOG.warn("GTA Settings file not found!");
         } catch (IOException e) {
-            LOG.warning("Exception while reading GTA Settings file: " + e.getLocalizedMessage());
+            LOG.warn("Exception while reading GTA Settings file: " + e.getLocalizedMessage());
         } finally {
             IOUtils.closeQuietly(fileOutputStream);
         }

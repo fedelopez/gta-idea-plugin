@@ -6,8 +6,8 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.DataConstantsEx;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
@@ -15,20 +15,17 @@ import org.apache.commons.io.FilenameUtils;
 import org.gta.SettingsUpdater;
 
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author fede lopez
  */
 public class SettingsUpdaterAction extends AnAction {
 
-    private static final Logger LOG = Logger.getLogger(SettingsUpdaterAction.class.getName());
+    private static final Logger LOG = Logger.getInstance(SettingsUpdaterAction.class.getName());
 
     public static final String MODULE_DIR = "$MODULE_DIR$";
 
-    private static final String PLUGIN_NOT_CONFIGURED = "GTA Idea plugin is not properly configured.";
-    private static final String PATH_MISSING = "Please provide a valid GTA settings file.";
+    private static final String PATH_MISSING = "GTA Settings file path not existing: ";
 
     private SettingsApplicationComponent applicationComponent;
     private SettingsUpdater.Builder settingsUpdaterBuilder;
@@ -41,11 +38,7 @@ public class SettingsUpdaterAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent event) {
         if (!settingsFileExists()) {
-            try {
-                Messages.showMessageDialog(PATH_MISSING, PLUGIN_NOT_CONFIGURED, Messages.getInformationIcon());
-            } catch (Throwable exception) {
-                //not possible to call showMessageDialog within the tests? hmmm
-            }
+            LOG.warn(PATH_MISSING + "'" + getGtaApplicationComponent().getGTASettingsFilePath() + "'");
             return;
         }
         DataContext dataContext = event.getDataContext();
@@ -57,10 +50,9 @@ public class SettingsUpdaterAction extends AnAction {
             try {
                 createSettingsUpdater(javaFile, element).update();
             } catch (Exception e) {
-                LOG.log(Level.WARNING, e.getLocalizedMessage());
+                LOG.warn(e);
             }
         }
-
     }
 
     private SettingsUpdater createSettingsUpdater(PsiJavaFile javaFile, Object element) {
