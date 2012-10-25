@@ -9,10 +9,14 @@ import org.uispec4j.interception.FileChooserHandler;
 import org.uispec4j.interception.WindowHandler;
 import org.uispec4j.interception.WindowInterceptor;
 
+import java.util.logging.Logger;
+
 /**
  * @author fede lopez
  */
 public class PluginFormTest extends UISpecTestCase {
+
+    private final static Logger LOG = Logger.getLogger(PluginFormTest.class.getName());
 
     private TextBox txtFilePath;
     private Button btnOpenFileChooser;
@@ -22,6 +26,10 @@ public class PluginFormTest extends UISpecTestCase {
     private PluginForm pluginForm;
 
     public void testClickOpenFileChooser() {
+        if (isLinux()) {
+            LOG.info("This test cannot run on headless environments (No X11 DISPLAY variable).");
+            return;
+        }
 
         assertTrue(txtFilePath.textIsEmpty());
 
@@ -63,6 +71,12 @@ public class PluginFormTest extends UISpecTestCase {
 
         txtFilePath.setText(filePath);
         assertTrue(pluginForm.isModified());
+    }
+
+
+    public static boolean isLinux() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return (!os.contains("win") && !os.contains("mac"));
     }
 
     @Override
