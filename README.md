@@ -1,3 +1,5 @@
+[![Build Status](https://buildhive.cloudbees.com/job/fedelopez/job/gta-idea-plugin/badge/icon)](https://buildhive.cloudbees.com/job/fedelopez/job/gta-idea-plugin/)
+
 Introduction
 ============
 * * *
