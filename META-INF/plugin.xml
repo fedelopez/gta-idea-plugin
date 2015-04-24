@@ -1,9 +1,8 @@
 <idea-plugin version="2">
     <name>gta-idea-plugin</name>
     <description>IntelliJ plugin to automatically update the GTA build settings file.</description>
-    <change-notes>Added the possibility to update the settings file in order launch the tests for a given package.
-    </change-notes>
-    <version>1.4</version>
+    <change-notes>Added the ability to specify a configurable classes directory.</change-notes>
+    <version>1.5</version>
     <vendor>Fede Lopez Laborda</vendor>
     <idea-version since-build="7000"/>
 

@@ -4,7 +4,7 @@
 
     <groupId>gta-idea-plugin</groupId>
     <artifactId>gta-idea-plugin</artifactId>
-    <version>1.4</version>
+    <version>1.5</version>
     <name>Grand Test Auto IDEA Plugin</name>
     <packaging>jar</packaging>
 
@@ -12,6 +12,14 @@
         <developer>
             <id>fede</id>
             <name>Fede Lopez</name>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>+11</timezone>
+        </developer>
+        <developer>
+            <id>glen</id>
+            <name>Glen Tan</name>
             <roles>
                 <role>developer</role>
             </roles>

@@ -1,5 +1,6 @@
 package org.gta;
 
+import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,10 +10,33 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-/** @author fede lopez */
+/**
+ * @author fede lopez
+ */
 public class SettingsUpdaterTest {
 
+    private static final String EXPECTED_CLASSES_ROOT_DIR = "C:\\temp\\classes";
     private File file;
+
+    @Test
+    public void createFileIfNotExisting() throws IOException {
+        file = new File(file.getParent(), "I-do-not-exist.txt");
+        file.delete();
+        Assert.assertFalse(file.exists());
+
+        SettingsUpdater sut = createSettingsUpdater("au.com.pks.rippledown.test", "RippledownTest.java", "doItTest");
+        sut.update();
+
+        Properties actualProperties = new Properties();
+        actualProperties.load(new FileInputStream(file.getAbsolutePath()));
+
+        Assert.assertTrue(file.exists());
+        assertRunBlock(actualProperties, "t", "f", "f");
+        assertPackageBlock(actualProperties, "au.com.pks.rippledown", "", "");
+        assertClassBlock(actualProperties, "RippledownTest", "", "");
+        assertMethodBlock(actualProperties, "doItTest", "", "");
+        assertClassesRootDir(actualProperties, EXPECTED_CLASSES_ROOT_DIR);
+    }
 
     @Test
     public void update() throws IOException {
@@ -27,6 +51,7 @@ public class SettingsUpdaterTest {
         assertPackageBlock(actualProperties, "au.com.pks.rippledown", "", "");
         assertClassBlock(actualProperties, "RippledownTest", "", "");
         assertMethodBlock(actualProperties, "doItTest", "", "");
+        assertClassesRootDir(actualProperties, EXPECTED_CLASSES_ROOT_DIR);
     }
 
     @Test
@@ -163,7 +188,7 @@ public class SettingsUpdaterTest {
         Assert.assertNotNull("Settings updater should not be null", settingsUpdater);
     }
 
-    private SettingsUpdater createSettingsUpdater(String packageName, String className, String methodName) {
+    private SettingsUpdater createSettingsUpdater(String packageName, @Nullable String className, @Nullable String methodName) {
         SettingsUpdater.Builder builder = new SettingsUpdater.Builder();
         builder.gtaSettingsFile(file).packageName(packageName);
         if (className != null) {
@@ -172,6 +197,7 @@ public class SettingsUpdaterTest {
         if (methodName != null) {
             builder.methodName(methodName);
         }
+        builder.classesDirectory(EXPECTED_CLASSES_ROOT_DIR);
         return builder.build();
     }
 
@@ -197,6 +223,10 @@ public class SettingsUpdaterTest {
         Assert.assertEquals(single, actualProperties.getProperty(GTAConstants.SINGLE_METHOD));
         Assert.assertEquals(first, actualProperties.getProperty(GTAConstants.FIRST_METHOD));
         Assert.assertEquals(last, actualProperties.getProperty(GTAConstants.LAST_METHOD));
+    }
+
+    private static void assertClassesRootDir(Properties actualProperties, String expected) {
+        Assert.assertEquals(expected, actualProperties.getProperty(GTAConstants.CLASSES_ROOT));
     }
 
     @Before

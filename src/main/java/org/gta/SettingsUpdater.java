@@ -2,6 +2,7 @@ package org.gta;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +22,7 @@ public class SettingsUpdater {
     private final String packageName;
     private final String className;
     private final String methodName;
+    private final String classesRoot;
 
     private final GTARunTestType runTestType;
 
@@ -32,6 +34,7 @@ public class SettingsUpdater {
         this.packageName = builder.packageName;
         this.className = builder.className == null ? "" : builder.className;
         this.methodName = builder.methodName == null ? "" : builder.methodName;
+        this.classesRoot = builder.classesRootDir;
     }
 
     public void update() {
@@ -41,6 +44,7 @@ public class SettingsUpdater {
     }
 
     private void doUpdate() {
+        updateClassesRootBlock();
         switch (runTestType) {
             case RUN_FUNCTION_TESTS:
                 updateClassBlock(className);
@@ -84,6 +88,10 @@ public class SettingsUpdater {
         return packageName;
     }
 
+    private void updateClassesRootBlock() {
+        properties.setProperty(GTAConstants.CLASSES_ROOT, classesRoot);
+    }
+
     private void updateRunBlock(String unitTests, String functionTests, String loadTests) {
         properties.setProperty(GTAConstants.RUN_UNIT_TESTS, unitTests);
         properties.setProperty(GTAConstants.RUN_FUNCTION_TESTS, functionTests);
@@ -124,12 +132,14 @@ public class SettingsUpdater {
     private void saveProperties() {
         FileOutputStream fileOutputStream = null;
         try {
+            if (!gtaSettingsFile.exists()) {
+                FileUtils.writeStringToFile(gtaSettingsFile, "#GTA settings file created by gta-idea-plugin");
+                LOG.warn("GTA Settings file created in " + gtaSettingsFile.getAbsolutePath());
+            }
             fileOutputStream = new FileOutputStream(gtaSettingsFile);
             properties.store(fileOutputStream, gtaSettingsFile.getAbsolutePath());
-        } catch (FileNotFoundException e) {
-            LOG.warn("GTA Settings file not found!");
         } catch (IOException e) {
-            LOG.warn("Exception while reading GTA Settings file: " + e.getLocalizedMessage());
+            LOG.warn("Exception while creating default GTA Settings file: " + e.getLocalizedMessage());
         } finally {
             IOUtils.closeQuietly(fileOutputStream);
         }
@@ -140,6 +150,7 @@ public class SettingsUpdater {
         private String packageName;
         private String className;
         private String methodName;
+        private String classesRootDir;
 
         public SettingsUpdater build() throws IllegalStateException {
             checkInvariants();
@@ -173,6 +184,11 @@ public class SettingsUpdater {
 
         public Builder methodName(@Nullable String methodName) {
             this.methodName = methodName;
+            return this;
+        }
+
+        public Builder classesDirectory(String classesRootDir) {
+            this.classesRootDir = classesRootDir;
             return this;
         }
     }

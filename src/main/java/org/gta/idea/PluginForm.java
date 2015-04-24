@@ -5,8 +5,6 @@ import org.apache.commons.io.FilenameUtils;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -18,9 +16,13 @@ public class PluginForm {
     private JTextField txtFilePath;
     private JButton btnOpenFileChooser;
     private JPanel contentPane;
+    private JCheckBox updateClassesDirectoryCheckBox;
+    private JTextField classesPath;
     private boolean isModified;
 
     public PluginForm() {
+        updateClassesDirectoryCheckBox.setSelected(false);
+        classesPath.setEditable(false);
         initListeners();
     }
 
@@ -40,17 +42,13 @@ public class PluginForm {
 
             }
         });
-        txtFilePath.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent documentEvent) {
-                applyIsModified(documentEvent.getDocument());
-            }
-
-            public void removeUpdate(DocumentEvent documentEvent) {
-                applyIsModified(documentEvent.getDocument());
-            }
-
-            public void changedUpdate(DocumentEvent documentEvent) {
-                applyIsModified(documentEvent.getDocument());
+        txtFilePath.getDocument().addDocumentListener(new ApplyIsModifiedListener());
+        classesPath.getDocument().addDocumentListener(new ApplyIsModifiedListener());
+        updateClassesDirectoryCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                classesPath.setEditable(updateClassesDirectoryCheckBox.isSelected());
+                applyIsModified();
             }
         });
     }
@@ -61,10 +59,14 @@ public class PluginForm {
 
     public void setData(SettingsApplicationComponent data) {
         txtFilePath.setText(data.getGTASettingsFilePath());
+        updateClassesDirectoryCheckBox.setSelected(data.isUpdateClassesDirectory());
+        classesPath.setText(data.getClassesDirectory());
     }
 
     public void getData(SettingsApplicationComponent data) {
         data.setGTASettingsFilePath(txtFilePath.getText());
+        data.setUpdateClassesDirectory(updateClassesDirectoryCheckBox.isSelected());
+        data.setClassesDirectory(classesPath.getText());
     }
 
     public boolean isModified() {
@@ -75,26 +77,8 @@ public class PluginForm {
         isModified = modified;
     }
 
-    private void applyIsModified(Document document) {
-        try {
-            String text = document.getText(0, document.getLength());
-            if (text == null || text.trim().length() == 0) {
-                isModified = true;
-                return;
-            }
-            if (isUsingPathVariables(text)) {
-                isModified = true;
-            } else {
-                File file = new File(text);
-                isModified = file.exists() && file.isFile();
-            }
-        } catch (BadLocationException e) {
-            // just do nothing
-        }
-    }
-
-    private boolean isUsingPathVariables(String text) {
-        return text.startsWith(SettingsUpdaterAction.MODULE_DIR);
+    private void applyIsModified() {
+        isModified = true;
     }
 
     private static class GTAFileFilter extends javax.swing.filechooser.FileFilter {
@@ -107,6 +91,20 @@ public class PluginForm {
         @Override
         public String getDescription() {
             return "(.txt, .properties, .xml)";
+        }
+    }
+
+    private class ApplyIsModifiedListener implements DocumentListener {
+        public void insertUpdate(DocumentEvent documentEvent) {
+            applyIsModified();
+        }
+
+        public void removeUpdate(DocumentEvent documentEvent) {
+            applyIsModified();
+        }
+
+        public void changedUpdate(DocumentEvent documentEvent) {
+            applyIsModified();
         }
     }
 }

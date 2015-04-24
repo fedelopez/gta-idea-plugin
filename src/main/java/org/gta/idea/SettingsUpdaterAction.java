@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.DataConstantsEx;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiJavaFile;
@@ -24,8 +25,7 @@ public class SettingsUpdaterAction extends AnAction {
     private static final Logger LOG = Logger.getInstance(SettingsUpdaterAction.class.getName());
 
     public static final String MODULE_DIR = "$MODULE_DIR$";
-
-    private static final String PATH_MISSING = "GTA Settings file path not existing: ";
+    static final String DEFAULT_GTA_SETTINGS_FILE = "GTASettings.txt";
 
     private SettingsApplicationComponent applicationComponent;
     private SettingsUpdater.Builder settingsUpdaterBuilder;
@@ -37,10 +37,6 @@ public class SettingsUpdaterAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent event) {
-        if (!settingsFileExists()) {
-            LOG.warn(PATH_MISSING + "'" + getGtaApplicationComponent().getGTASettingsFilePath() + "'");
-            return;
-        }
         DataContext dataContext = event.getDataContext();
         Object data = dataContext.getData(DataConstantsEx.PSI_FILE);
         module = (Module) dataContext.getData(DataConstantsEx.MODULE);
@@ -69,11 +65,25 @@ public class SettingsUpdaterAction extends AnAction {
         } else {
             configureForClass(builder);
         }
+        if (applicationComponent.isUpdateClassesDirectory()) {
+            builder.classesDirectory(classesDirectory());
+        }
         return builder.build();
+    }
+
+    private String classesDirectory() {
+        String classesDirectory = applicationComponent.getClassesDirectory();
+        if (classesDirectory == null || classesDirectory.trim().length() == 0) {
+            classesDirectory = CompilerPaths.getModuleOutputDirectory(module, false).getPath();
+        }
+        return classesDirectory;
     }
 
     private File gtaSettingsFile() {
         String filePath = getGtaApplicationComponent().getGTASettingsFilePath();
+        if (filePath == null || filePath.trim().isEmpty()) {
+            return new File(DEFAULT_GTA_SETTINGS_FILE);
+        }
         if (filePath.startsWith(MODULE_DIR)) {
             filePath = filePath.replace(MODULE_DIR, FilenameUtils.getFullPath(module.getModuleFilePath()));
         }
@@ -124,10 +134,5 @@ public class SettingsUpdaterAction extends AnAction {
 
     void setSettingsUpdaterBuilder(SettingsUpdater.Builder settingsUpdaterBuilder) {
         this.settingsUpdaterBuilder = settingsUpdaterBuilder;
-    }
-
-    private boolean settingsFileExists() {
-        String path = getGtaApplicationComponent().getGTASettingsFilePath();
-        return path != null && (path.startsWith(MODULE_DIR) || new File(path).exists());
     }
 }

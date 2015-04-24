@@ -21,6 +21,8 @@ public final class GTAConstants {
     public static final String FIRST_METHOD = "FIRST_METHOD";
     public static final String LAST_METHOD = "LAST_METHOD";
 
+    public static final String CLASSES_ROOT = "CLASSES_ROOT";
+
     private GTAConstants() {
         // prevent instantiation
     }

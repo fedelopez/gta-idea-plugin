@@ -15,21 +15,26 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author fede lopez
  */
 public class SettingsUpdaterActionTest {
 
+    public static final String CLASSES_ROOT_DIR = "C:\\temp";
     private final String filePath = getClass().getResource("GTASettings.txt").getPath();
 
-    private SettingsUpdaterAction sut;
+    private SettingsUpdaterAction action;
 
     private AnActionEvent actionEvent;
     private DataContext dataContext;
 
-    private Module module;
     private PsiJavaFile javaFile;
     private PsiMethod selectedMethod;
 
@@ -40,7 +45,6 @@ public class SettingsUpdaterActionTest {
 
     @Test
     public void actionPerformed() throws IOException {
-        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         when(applicationComponent.getGTASettingsFilePath()).thenReturn(filePath);
         when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown.test");
         when(javaFile.getName()).thenReturn("RippledownTest.java");
@@ -52,7 +56,7 @@ public class SettingsUpdaterActionTest {
 
         when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
 
-        sut.actionPerformed(actionEvent);
+        action.actionPerformed(actionEvent);
 
         verify(javaFile).getPackageName();
         verify(javaFile).getName();
@@ -64,7 +68,6 @@ public class SettingsUpdaterActionTest {
 
     @Test
     public void actionPerformedWithMethod() throws IOException {
-        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         when(applicationComponent.getGTASettingsFilePath()).thenReturn(filePath);
         when(dataContext.getData(DataConstantsEx.PSI_ELEMENT)).thenReturn(selectedMethod);
         when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown.test");
@@ -78,7 +81,7 @@ public class SettingsUpdaterActionTest {
 
         when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
 
-        sut.actionPerformed(actionEvent);
+        action.actionPerformed(actionEvent);
 
         verify(settingsUpdaterBuilder).methodName("doItTest");
         verify(settingsUpdater).update();
@@ -86,7 +89,6 @@ public class SettingsUpdaterActionTest {
 
     @Test
     public void actionPerformedWithPackage() throws IOException {
-        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         when(applicationComponent.getGTASettingsFilePath()).thenReturn(filePath);
         when(dataContext.getData(DataConstantsEx.PSI_ELEMENT)).thenReturn(selectedPackage);
         when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown.test");
@@ -99,7 +101,7 @@ public class SettingsUpdaterActionTest {
 
         when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
 
-        sut.actionPerformed(actionEvent);
+        action.actionPerformed(actionEvent);
 
         verify(settingsUpdaterBuilder).packageName("au.com.pks.rippledown.test");
         verify(settingsUpdaterBuilder).className("");
@@ -110,27 +112,48 @@ public class SettingsUpdaterActionTest {
 
     @Test
     public void actionPerformedNullGTAFile() throws IOException {
-        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         when(applicationComponent.getGTASettingsFilePath()).thenReturn(null);
 
-        sut.actionPerformed(actionEvent);
+        when(dataContext.getData(DataConstantsEx.PSI_ELEMENT)).thenReturn(selectedMethod);
+        when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown");
+        when(javaFile.getName()).thenReturn("Rippledown.java");
+        when(selectedMethod.getName()).thenReturn("doIt");
 
-        verify(settingsUpdater, never()).update();
+        when(settingsUpdaterBuilder.className(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.packageName(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.methodName(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.gtaSettingsFile(new File(SettingsUpdaterAction.DEFAULT_GTA_SETTINGS_FILE))).thenReturn(settingsUpdaterBuilder);
+
+        when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
+
+        action.actionPerformed(actionEvent);
+
+        verify(settingsUpdater).update();
     }
 
     @Test
     public void actionPerformedNonExistingGTAFile() throws IOException {
-        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         when(applicationComponent.getGTASettingsFilePath()).thenReturn("I-Dont-Exist");
 
-        sut.actionPerformed(actionEvent);
+        when(dataContext.getData(DataConstantsEx.PSI_ELEMENT)).thenReturn(selectedMethod);
+        when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown");
+        when(javaFile.getName()).thenReturn("Rippledown.java");
+        when(selectedMethod.getName()).thenReturn("doIt");
 
-        verify(settingsUpdater, never()).update();
+        when(settingsUpdaterBuilder.className(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.packageName(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.methodName(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.gtaSettingsFile(any(File.class))).thenReturn(settingsUpdaterBuilder);
+
+        when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
+
+        action.actionPerformed(actionEvent);
+
+        verify(settingsUpdater).update();
     }
 
     @Test
     public void actionPerformedModulePathEnvironmentVariableGTAFile() throws IOException {
-        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown.test");
         when(javaFile.getName()).thenReturn("RippledownTest.java");
 
@@ -140,16 +163,14 @@ public class SettingsUpdaterActionTest {
         when(settingsUpdaterBuilder.gtaSettingsFile(any(File.class))).thenReturn(settingsUpdaterBuilder);
 
         when(applicationComponent.getGTASettingsFilePath()).thenReturn(SettingsUpdaterAction.MODULE_DIR + "/GTASettings.txt");
-        when(module.getModuleFilePath()).thenReturn(filePath);
 
-        sut.actionPerformed(actionEvent);
+        action.actionPerformed(actionEvent);
 
         verify(settingsUpdaterBuilder).gtaSettingsFile(new File(filePath));
     }
 
     @Test
     public void actionPerformedNonTestClass() throws IOException {
-        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         when(applicationComponent.getGTASettingsFilePath()).thenReturn(filePath);
         when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown");
         when(javaFile.getName()).thenReturn("Rippledown.java");
@@ -161,7 +182,7 @@ public class SettingsUpdaterActionTest {
 
         when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
 
-        sut.actionPerformed(actionEvent);
+        action.actionPerformed(actionEvent);
 
         verify(javaFile).getPackageName();
         verify(javaFile).getName();
@@ -173,7 +194,6 @@ public class SettingsUpdaterActionTest {
 
     @Test
     public void actionPerformedNonTestMethod() throws IOException {
-        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         when(applicationComponent.getGTASettingsFilePath()).thenReturn(filePath);
         when(dataContext.getData(DataConstantsEx.PSI_ELEMENT)).thenReturn(selectedMethod);
         when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown");
@@ -187,7 +207,7 @@ public class SettingsUpdaterActionTest {
 
         when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
 
-        sut.actionPerformed(actionEvent);
+        action.actionPerformed(actionEvent);
 
         verify(settingsUpdaterBuilder).methodName("doIt");
         verify(settingsUpdater).update();
@@ -195,7 +215,6 @@ public class SettingsUpdaterActionTest {
 
     @Test
     public void actionPerformedFunctionTest() throws IOException {
-        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         when(applicationComponent.getGTASettingsFilePath()).thenReturn(filePath);
         when(dataContext.getData(DataConstantsEx.PSI_ELEMENT)).thenReturn(selectedMethod);
         when(javaFile.getPackageName()).thenReturn("rippledown.translation.functiontest");
@@ -209,7 +228,7 @@ public class SettingsUpdaterActionTest {
 
         when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
 
-        sut.actionPerformed(actionEvent);
+        action.actionPerformed(actionEvent);
 
         verify(settingsUpdaterBuilder).className("AssignTranslationPermissions.java");
         verify(settingsUpdater).update();
@@ -217,7 +236,6 @@ public class SettingsUpdaterActionTest {
 
     @Test
     public void actionPerformedLoadTest() throws IOException {
-        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         when(applicationComponent.getGTASettingsFilePath()).thenReturn(filePath);
         when(dataContext.getData(DataConstantsEx.PSI_ELEMENT)).thenReturn(selectedMethod);
         when(javaFile.getPackageName()).thenReturn("rippledown.translation.loadtest");
@@ -231,18 +249,79 @@ public class SettingsUpdaterActionTest {
 
         when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
 
-        sut.actionPerformed(actionEvent);
+        action.actionPerformed(actionEvent);
 
         verify(settingsUpdaterBuilder).className("AssignTranslationPermissions.java");
         verify(settingsUpdater).update();
     }
 
+    @Test
+    public void classesOutputDirectory() throws IOException {
+        when(applicationComponent.getGTASettingsFilePath()).thenReturn(filePath);
+        when(applicationComponent.isUpdateClassesDirectory()).thenReturn(true);
+
+        when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown");
+        when(javaFile.getName()).thenReturn("Rippledown.java");
+
+        when(settingsUpdaterBuilder.packageName(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.className(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.methodName(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.gtaSettingsFile(any(File.class))).thenReturn(settingsUpdaterBuilder);
+
+        when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
+
+        action.actionPerformed(actionEvent);
+
+        verify(settingsUpdaterBuilder).classesDirectory(CLASSES_ROOT_DIR);
+    }
+
+    @Test
+    public void shouldNotUpdateClassesOutputDirectory() throws IOException {
+        when(applicationComponent.getGTASettingsFilePath()).thenReturn(filePath);
+        when(applicationComponent.isUpdateClassesDirectory()).thenReturn(false);
+
+        when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown");
+        when(javaFile.getName()).thenReturn("Rippledown.java");
+
+        when(settingsUpdaterBuilder.packageName(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.className(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.methodName(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.gtaSettingsFile(any(File.class))).thenReturn(settingsUpdaterBuilder);
+
+        when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
+
+        action.actionPerformed(actionEvent);
+
+        verify(settingsUpdaterBuilder, never()).classesDirectory(CLASSES_ROOT_DIR);
+    }
+
+    @Test
+    public void shouldSetACustomClassesOutputDirectory() throws IOException {
+        when(applicationComponent.getGTASettingsFilePath()).thenReturn(filePath);
+        when(applicationComponent.isUpdateClassesDirectory()).thenReturn(true);
+        when(applicationComponent.getClassesDirectory()).thenReturn("C:/home/joe/project-a/classes");
+
+        when(javaFile.getPackageName()).thenReturn("au.com.pks.rippledown");
+        when(javaFile.getName()).thenReturn("Rippledown.java");
+
+        when(settingsUpdaterBuilder.packageName(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.className(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.methodName(anyString())).thenReturn(settingsUpdaterBuilder);
+        when(settingsUpdaterBuilder.gtaSettingsFile(any(File.class))).thenReturn(settingsUpdaterBuilder);
+
+        when(settingsUpdaterBuilder.build()).thenReturn(settingsUpdater);
+
+        action.actionPerformed(actionEvent);
+
+        verify(settingsUpdaterBuilder).classesDirectory("C:/home/joe/project-a/classes");
+    }
+
     @Before
     public void init() {
-        sut = new SettingsUpdaterAction();
-        module = mock(Module.class);
-        dataContext = mock(DataContext.class);
+        action = new SettingsUpdaterAction();
         javaFile = mock(PsiJavaFile.class);
+        dataContext = mock(DataContext.class);
+        when(dataContext.getData(DataConstantsEx.PSI_FILE)).thenReturn(javaFile);
         selectedMethod = mock(PsiMethod.class);
         selectedPackage = mock(PsiPackage.class);
         settingsUpdater = mock(SettingsUpdater.class);
@@ -250,9 +329,10 @@ public class SettingsUpdaterActionTest {
         actionEvent = new AnActionEvent(null, dataContext, "", new Presentation(), null, 0);
         applicationComponent = mock(SettingsApplicationComponent.class);
 
-        sut.setGTAApplicationComponent(applicationComponent);
-        sut.setSettingsUpdaterBuilder(settingsUpdaterBuilder);
+        action.setGTAApplicationComponent(applicationComponent);
+        action.setSettingsUpdaterBuilder(settingsUpdaterBuilder);
 
+        Module module = new ModuleMock(filePath, CLASSES_ROOT_DIR);
         when(dataContext.getData(DataConstantsEx.MODULE)).thenReturn(module);
     }
 

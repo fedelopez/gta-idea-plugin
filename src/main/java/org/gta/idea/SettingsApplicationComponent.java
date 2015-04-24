@@ -25,6 +25,8 @@ public class SettingsApplicationComponent implements ApplicationComponent, Confi
     public static final String COMPONENT_NAME = "GTASettingsApplicationComponent";
 
     private String filePath;
+    private boolean updateClassesDirectory;
+    private String classesDirectory;
 
     @Transient
     private PluginForm pluginForm = new PluginForm();
@@ -38,12 +40,28 @@ public class SettingsApplicationComponent implements ApplicationComponent, Confi
     public void disposeComponent() {
     }
 
-    public String getGTASettingsFilePath() {
+    String getGTASettingsFilePath() {
         return filePath;
     }
 
-    public void setGTASettingsFilePath(String filePath) {
+    void setGTASettingsFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    boolean isUpdateClassesDirectory() {
+        return updateClassesDirectory;
+    }
+
+    void setUpdateClassesDirectory(boolean updateClassesDirectory) {
+        this.updateClassesDirectory = updateClassesDirectory;
+    }
+
+    String getClassesDirectory() {
+        return classesDirectory;
+    }
+
+    void setClassesDirectory(String classesDirectory) {
+        this.classesDirectory = classesDirectory;
     }
 
     @NotNull
