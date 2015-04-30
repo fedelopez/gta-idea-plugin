@@ -25,7 +25,6 @@ public class SettingsApplicationComponent implements ApplicationComponent, Confi
     public static final String COMPONENT_NAME = "GTASettingsApplicationComponent";
 
     private String filePath;
-    private boolean updateClassesDirectory;
     private String classesDirectory;
 
     @Transient
