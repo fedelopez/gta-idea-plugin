@@ -16,13 +16,10 @@ public class PluginForm {
     private JTextField txtFilePath;
     private JButton btnOpenFileChooser;
     private JPanel contentPane;
-    private JCheckBox updateClassesDirectoryCheckBox;
     private JTextField classesPath;
     private boolean isModified;
 
     public PluginForm() {
-        updateClassesDirectoryCheckBox.setSelected(false);
-        classesPath.setEditable(false);
         initListeners();
     }
 
@@ -44,13 +41,6 @@ public class PluginForm {
         });
         txtFilePath.getDocument().addDocumentListener(new ApplyIsModifiedListener());
         classesPath.getDocument().addDocumentListener(new ApplyIsModifiedListener());
-        updateClassesDirectoryCheckBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                classesPath.setEditable(updateClassesDirectoryCheckBox.isSelected());
-                applyIsModified();
-            }
-        });
     }
 
     public JPanel getContentPane() {
@@ -59,13 +49,11 @@ public class PluginForm {
 
     public void setData(SettingsApplicationComponent data) {
         txtFilePath.setText(data.getGTASettingsFilePath());
-        updateClassesDirectoryCheckBox.setSelected(data.isUpdateClassesDirectory());
         classesPath.setText(data.getClassesDirectory());
     }
 
     public void getData(SettingsApplicationComponent data) {
         data.setGTASettingsFilePath(txtFilePath.getText());
-        data.setUpdateClassesDirectory(updateClassesDirectoryCheckBox.isSelected());
         data.setClassesDirectory(classesPath.getText());
     }
 

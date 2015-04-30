@@ -48,14 +48,6 @@ public class SettingsApplicationComponent implements ApplicationComponent, Confi
         this.filePath = filePath;
     }
 
-    boolean isUpdateClassesDirectory() {
-        return updateClassesDirectory;
-    }
-
-    void setUpdateClassesDirectory(boolean updateClassesDirectory) {
-        this.updateClassesDirectory = updateClassesDirectory;
-    }
-
     String getClassesDirectory() {
         return classesDirectory;
     }

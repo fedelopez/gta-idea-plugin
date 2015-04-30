@@ -65,9 +65,7 @@ public class SettingsUpdaterAction extends AnAction {
         } else {
             configureForClass(builder);
         }
-        if (applicationComponent.isUpdateClassesDirectory()) {
-            builder.classesDirectory(classesDirectory());
-        }
+        builder.classesDirectory(classesDirectory());
         return builder.build();
     }
 
@@ -76,7 +74,7 @@ public class SettingsUpdaterAction extends AnAction {
         if (classesDirectory == null || classesDirectory.trim().length() == 0) {
             classesDirectory = CompilerPaths.getModuleOutputDirectory(module, false).getPath();
         }
-        return classesDirectory;
+        return filterPath(classesDirectory);
     }
 
     private File gtaSettingsFile() {
@@ -84,10 +82,15 @@ public class SettingsUpdaterAction extends AnAction {
         if (filePath == null || filePath.trim().isEmpty()) {
             return new File(DEFAULT_GTA_SETTINGS_FILE);
         }
+        filePath = filterPath(filePath);
+        return new File(filePath);
+    }
+
+    private String filterPath(String filePath) {
         if (filePath.startsWith(MODULE_DIR)) {
             filePath = filePath.replace(MODULE_DIR, FilenameUtils.getFullPath(module.getModuleFilePath()));
         }
-        return new File(filePath);
+        return filePath;
     }
 
     private void configureForPackage(SettingsUpdater.Builder builder) {

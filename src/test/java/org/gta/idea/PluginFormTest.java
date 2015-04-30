@@ -1,7 +1,10 @@
 package org.gta.idea;
 
 import org.apache.commons.io.FilenameUtils;
-import org.uispec4j.*;
+import org.uispec4j.Button;
+import org.uispec4j.Panel;
+import org.uispec4j.TextBox;
+import org.uispec4j.UISpecTestCase;
 import org.uispec4j.assertion.Assertion;
 import org.uispec4j.interception.FileChooserHandler;
 import org.uispec4j.interception.WindowHandler;
@@ -23,7 +26,6 @@ public class PluginFormTest extends UISpecTestCase {
     private TextBox gtaSettingsFilePath;
     private Button btnOpenFileChooser;
 
-    private CheckBox updateClasses;
     private TextBox classesPath;
 
     private String filePath;
@@ -65,7 +67,7 @@ public class PluginFormTest extends UISpecTestCase {
         assertTrue(pluginForm.isModified());
     }
 
-    public void testIsModified() {
+    public void testIsModifiedWhenGTASettingsFilePath() {
         assertFalse(pluginForm.isModified());
 
         gtaSettingsFilePath.setText("somefile.txt");
@@ -75,56 +77,31 @@ public class PluginFormTest extends UISpecTestCase {
         assertTrue(pluginForm.isModified());
     }
 
-    public void testIsModifiedWhenSelectingToUpdateClasses() {
-        assertFalse(pluginForm.isModified());
-
-        updateClasses.click();
-
-        assertTrue(pluginForm.isModified());
-    }
-
     public void testIsModifiedWhenSettingClassesDirectory() {
         assertFalse(pluginForm.isModified());
 
-        updateClasses.click();
-        pluginForm.setModified(false);
-
-        classesPath.setText("C:\\my-classes-dir");
+        classesPath.setText("C:\\some-dir");
         assertTrue(pluginForm.isModified());
-    }
-
-    public void testShouldEnableTextFieldWhenSelectingUpdateClassesDirectory() {
-        assertFalse(updateClasses.isSelected());
-        assertFalse(classesPath.isEditable());
-
-        updateClasses.click();
-        assertThat(classesPath.isEditable());
-        updateClasses.click();
-        assertFalse(classesPath.isEditable());
     }
 
     public void testSetData() {
         SettingsApplicationComponent settingsUpdaterAction = mock(SettingsApplicationComponent.class);
         when(settingsUpdaterAction.getGTASettingsFilePath()).thenReturn("C:\\GTASettings.txt");
-        when(settingsUpdaterAction.isUpdateClassesDirectory()).thenReturn(true);
         when(settingsUpdaterAction.getClassesDirectory()).thenReturn("C:\\dev\\classes");
 
         pluginForm.setData(settingsUpdaterAction);
 
         assertThat(gtaSettingsFilePath.textEquals("C:\\GTASettings.txt"));
-        assertThat(updateClasses.isSelected());
         assertThat(classesPath.textEquals("C:\\dev\\classes"));
     }
 
     public void testGetData() {
         gtaSettingsFilePath.setText("C:\\helloGTA");
-        updateClasses.click();
         classesPath.setText("C:\\helloGTAClasses");
 
         SettingsApplicationComponent settingsUpdaterAction = mock(SettingsApplicationComponent.class);
         pluginForm.getData(settingsUpdaterAction);
         verify(settingsUpdaterAction).setGTASettingsFilePath("C:\\helloGTA");
-        verify(settingsUpdaterAction).setUpdateClassesDirectory(true);
         verify(settingsUpdaterAction).setClassesDirectory("C:\\helloGTAClasses");
     }
 
@@ -140,7 +117,6 @@ public class PluginFormTest extends UISpecTestCase {
         Panel pluginFormPanel = new Panel(pluginForm.getContentPane());
         gtaSettingsFilePath = pluginFormPanel.getTextBox("txtFilePath");
         btnOpenFileChooser = pluginFormPanel.getButton();
-        updateClasses = pluginFormPanel.getCheckBox();
         classesPath = pluginFormPanel.getTextBox("classesPath");
 
         filePath = getClass().getResource("GTASettings.txt").getFile();
