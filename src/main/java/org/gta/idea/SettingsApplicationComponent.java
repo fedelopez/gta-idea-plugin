@@ -39,19 +39,19 @@ public class SettingsApplicationComponent implements ApplicationComponent, Confi
     public void disposeComponent() {
     }
 
-    String getGTASettingsFilePath() {
+    public String getGTASettingsFilePath() {
         return filePath;
     }
 
-    void setGTASettingsFilePath(String filePath) {
+    public void setGTASettingsFilePath(String filePath) {
         this.filePath = filePath;
     }
 
-    String getClassesDirectory() {
+    public String getClassesDirectory() {
         return classesDirectory;
     }
 
-    void setClassesDirectory(String classesDirectory) {
+    public void setClassesDirectory(String classesDirectory) {
         this.classesDirectory = classesDirectory;
     }
 
