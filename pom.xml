@@ -4,7 +4,7 @@
 
     <groupId>gta-idea-plugin</groupId>
     <artifactId>gta-idea-plugin</artifactId>
-    <version>1.5</version>
+    <version>1.5.1</version>
     <name>Grand Test Auto IDEA Plugin</name>
     <packaging>jar</packaging>
 

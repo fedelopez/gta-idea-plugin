@@ -1,20 +1,14 @@
 package org.gta.idea;
 
-import org.apache.commons.io.FilenameUtils;
-
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
 
 /**
  * @author fede lopez
  */
 public class PluginForm {
     private JTextField txtFilePath;
-    private JButton btnOpenFileChooser;
     private JPanel contentPane;
     private JTextField classesPath;
     private boolean isModified;
@@ -24,21 +18,6 @@ public class PluginForm {
     }
 
     private void initListeners() {
-        btnOpenFileChooser.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        JFileChooser fileChooser = new JFileChooser();
-                        fileChooser.setFileFilter(new GTAFileFilter());
-                        int result = fileChooser.showOpenDialog(contentPane);
-                        if (JFileChooser.APPROVE_OPTION == result) {
-                            txtFilePath.setText(fileChooser.getSelectedFile().getAbsolutePath());
-                        }
-                    }
-                });
-
-            }
-        });
         txtFilePath.getDocument().addDocumentListener(new ApplyIsModifiedListener());
         classesPath.getDocument().addDocumentListener(new ApplyIsModifiedListener());
     }
@@ -67,19 +46,6 @@ public class PluginForm {
 
     private void applyIsModified() {
         isModified = true;
-    }
-
-    private static class GTAFileFilter extends javax.swing.filechooser.FileFilter {
-
-        @Override
-        public boolean accept(File file) {
-            return file.isDirectory() || FilenameUtils.isExtension(file.getName(), new String[]{"txt", "properties", "xml"});
-        }
-
-        @Override
-        public String getDescription() {
-            return "(.txt, .properties, .xml)";
-        }
     }
 
     private class ApplyIsModifiedListener implements DocumentListener {
