@@ -1,5 +1,6 @@
 package org.gta;
 
+import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,6 +17,7 @@ import java.util.Properties;
 public class SettingsUpdaterTest {
 
     private static final String EXPECTED_CLASSES_ROOT_DIR = "C:\\temp\\classes";
+    private static final String EXPECTED_PROD_CLASSES_ROOT_DIR = "C:\\temp\\prod";
     private File file;
 
     @Test
@@ -52,6 +54,15 @@ public class SettingsUpdaterTest {
         assertClassBlock(actualProperties, "RippledownTest", "", "");
         assertMethodBlock(actualProperties, "doItTest", "", "");
         assertClassesRootDir(actualProperties, EXPECTED_CLASSES_ROOT_DIR);
+    }
+
+    @Test
+    public void updateProductionClassesDir() throws IOException {
+        SettingsUpdater sut = createSettingsUpdater("au.com.pks.rippledown.test", "RippledownTest.java", "doItTest");
+        sut.update();
+        Properties actualProperties = new Properties();
+        actualProperties.load(new FileInputStream(file.getAbsolutePath()));
+        Assertions.assertThat(actualProperties.getProperty(GTAConstants.PROD_ROOT)).isEqualTo(EXPECTED_PROD_CLASSES_ROOT_DIR);
     }
 
     @Test
@@ -198,6 +209,7 @@ public class SettingsUpdaterTest {
             builder.methodName(methodName);
         }
         builder.classesDirectory(EXPECTED_CLASSES_ROOT_DIR);
+        builder.prodClassesDirectory(EXPECTED_PROD_CLASSES_ROOT_DIR);
         return builder.build();
     }
 
