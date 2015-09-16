@@ -1,7 +1,7 @@
 package org.gta.idea;
 
-import org.assertj.swing.core.GenericTypeMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiQuery;
 import org.assertj.swing.edt.GuiTask;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JTextComponentFixture;
@@ -9,11 +9,8 @@ import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.junit.Test;
 
 import javax.swing.*;
-import java.awt.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.swing.finder.WindowFinder.findFrame;
-import static org.assertj.swing.launcher.ApplicationLauncher.application;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,29 +20,31 @@ import static org.mockito.Mockito.when;
  */
 public class PluginFormTest extends AssertJSwingJUnitTestCase {
 
+    private PluginForm pluginForm;
+
     private JTextComponentFixture gtaSettingsPath;
     private JTextComponentFixture prodClassesPath;
     private JTextComponentFixture testClassesPath;
 
     @Test
     public void shouldApplyIsModifiedWhenGTASettingsFileChanges() throws Exception {
-        assertThat(getPluginForm().isModified()).isFalse();
+        assertThat(pluginForm.isModified()).isFalse();
         gtaSettingsPath.setText("/usr/home");
-        assertThat(getPluginForm().isModified()).isTrue();
+        assertThat(pluginForm.isModified()).isTrue();
     }
 
     @Test
     public void shouldApplyIsModifiedWhenTestClassesChanges() throws Exception {
-        assertThat(getPluginForm().isModified()).isFalse();
+        assertThat(pluginForm.isModified()).isFalse();
         testClassesPath.setText("/usr/home");
-        assertThat(getPluginForm().isModified()).isTrue();
+        assertThat(pluginForm.isModified()).isTrue();
     }
 
     @Test
     public void shouldApplyIsModifiedWhenProdClassesPathChanges() throws Exception {
-        assertThat(getPluginForm().isModified()).isFalse();
+        assertThat(pluginForm.isModified()).isFalse();
         prodClassesPath.setText("/usr/home");
-        assertThat(getPluginForm().isModified()).isTrue();
+        assertThat(pluginForm.isModified()).isTrue();
     }
 
     @Test
@@ -54,7 +53,7 @@ public class PluginFormTest extends AssertJSwingJUnitTestCase {
         when(settingsUpdaterAction.getProdClassesDirectory()).thenReturn("/usr/test");
         GuiActionRunner.execute(new GuiTask() {
             @Override protected void executeInEDT() throws Throwable {
-                getPluginForm().setData(settingsUpdaterAction);
+                pluginForm.setData(settingsUpdaterAction);
             }
         });
         assertThat(prodClassesPath.text()).isEqualTo("/usr/test");
@@ -66,7 +65,7 @@ public class PluginFormTest extends AssertJSwingJUnitTestCase {
         when(settingsUpdaterAction.getClassesDirectory()).thenReturn("/usr/test");
         GuiActionRunner.execute(new GuiTask() {
             @Override protected void executeInEDT() throws Throwable {
-                getPluginForm().setData(settingsUpdaterAction);
+                pluginForm.setData(settingsUpdaterAction);
             }
         });
         assertThat(testClassesPath.text()).isEqualTo("/usr/test");
@@ -78,7 +77,7 @@ public class PluginFormTest extends AssertJSwingJUnitTestCase {
         when(settingsUpdaterAction.getSettingsFilePath()).thenReturn("/usr/test");
         GuiActionRunner.execute(new GuiTask() {
             @Override protected void executeInEDT() throws Throwable {
-                getPluginForm().setData(settingsUpdaterAction);
+                pluginForm.setData(settingsUpdaterAction);
             }
         });
         assertThat(gtaSettingsPath.text()).isEqualTo("/usr/test");
@@ -91,7 +90,7 @@ public class PluginFormTest extends AssertJSwingJUnitTestCase {
 
         GuiActionRunner.execute(new GuiTask() {
             @Override protected void executeInEDT() throws Throwable {
-                getPluginForm().getData(settingsUpdaterAction);
+                pluginForm.getData(settingsUpdaterAction);
             }
         });
 
@@ -105,7 +104,7 @@ public class PluginFormTest extends AssertJSwingJUnitTestCase {
 
         GuiActionRunner.execute(new GuiTask() {
             @Override protected void executeInEDT() throws Throwable {
-                getPluginForm().getData(settingsUpdaterAction);
+                pluginForm.getData(settingsUpdaterAction);
             }
         });
 
@@ -119,44 +118,37 @@ public class PluginFormTest extends AssertJSwingJUnitTestCase {
 
         GuiActionRunner.execute(new GuiTask() {
             @Override protected void executeInEDT() throws Throwable {
-                getPluginForm().getData(settingsUpdaterAction);
+                pluginForm.getData(settingsUpdaterAction);
             }
         });
 
         verify(settingsUpdaterAction).setSettingsFilePath("usr/bin");
     }
 
-    @Override protected void onSetUp() {
-        mainPane = null;
-        application(PluginFormTest.class).start();
-        FrameFixture frame = findFrame(new GenericTypeMatcher<Frame>(Frame.class) {
-            protected boolean isMatching(Frame frame) {
-                return "Test frame".equals(frame.getTitle()) && frame.isShowing();
+    @Override
+    protected void onSetUp() {
+        pluginForm = GuiActionRunner.execute(new GuiQuery<PluginForm>() {
+            @Override protected PluginForm executeInEDT() throws Throwable {
+                return new PluginForm();
             }
-        }).using(robot());
+        });
+        FrameFixture frame = new FrameFixture(robot(), new TestFrame().createFrame(pluginForm));
         gtaSettingsPath = frame.textBox("txtFilePath");
         prodClassesPath = frame.textBox("prodClassesPath");
         testClassesPath = frame.textBox("classesPath");
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override public void run() {
-                JFrame frame = new JFrame("Test frame");
-                frame.setSize(400, 500);
-                frame.setContentPane(getPluginForm().getContentPane());
-                frame.setVisible(true);
-            }
-        });
-    }
-
-    private static PluginForm mainPane;
-
-    private static PluginForm getPluginForm() {
-        if (mainPane == null) {
-            mainPane = new PluginForm();
+    private class TestFrame {
+        public JFrame createFrame(final PluginForm pluginForm) {
+            return GuiActionRunner.execute(new GuiQuery<JFrame>() {
+                @Override protected JFrame executeInEDT() throws Throwable {
+                    JFrame frame = new JFrame();
+                    frame.setSize(400, 500);
+                    frame.setContentPane(pluginForm.getContentPane());
+                    frame.setVisible(true);
+                    return frame;
+                }
+            });
         }
-        return mainPane;
     }
-
 }
