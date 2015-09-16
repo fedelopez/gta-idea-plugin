@@ -24,7 +24,8 @@ public class SettingsApplicationComponent implements ApplicationComponent, Confi
 
     public static final String COMPONENT_NAME = "GTASettingsApplicationComponent";
 
-    private String filePath;
+    private String settingsFilePath;
+    private String prodClassesDirectory;
     private String classesDirectory;
 
     @Transient
@@ -39,12 +40,20 @@ public class SettingsApplicationComponent implements ApplicationComponent, Confi
     public void disposeComponent() {
     }
 
-    public String getGTASettingsFilePath() {
-        return filePath;
+    public String getSettingsFilePath() {
+        return settingsFilePath;
     }
 
-    public void setGTASettingsFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setSettingsFilePath(String settingsFilePath) {
+        this.settingsFilePath = settingsFilePath;
+    }
+
+    public String getProdClassesDirectory() {
+        return prodClassesDirectory;
+    }
+
+    public void setProdClassesDirectory(String filePath) {
+        prodClassesDirectory = filePath;
     }
 
     public String getClassesDirectory() {

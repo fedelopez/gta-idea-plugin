@@ -1,74 +1,162 @@
 package org.gta.idea;
 
-import org.uispec4j.Panel;
-import org.uispec4j.TextBox;
-import org.uispec4j.UISpecTestCase;
+import org.assertj.swing.core.GenericTypeMatcher;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.edt.GuiTask;
+import org.assertj.swing.fixture.FrameFixture;
+import org.assertj.swing.fixture.JTextComponentFixture;
+import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
+import org.junit.Test;
 
+import javax.swing.*;
+import java.awt.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.swing.finder.WindowFinder.findFrame;
+import static org.assertj.swing.launcher.ApplicationLauncher.application;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * @author fede lopez
+ * @author Martin Varga and FedericoL
  */
-public class PluginFormTest extends UISpecTestCase {
+public class PluginFormTest extends AssertJSwingJUnitTestCase {
 
-    private TextBox gtaSettingsFilePath;
-    private TextBox classesPath;
-    private String filePath;
-    private PluginForm pluginForm;
+    private JTextComponentFixture gtaSettingsPath;
+    private JTextComponentFixture prodClassesPath;
+    private JTextComponentFixture testClassesPath;
 
-    public void testModulePathVariable() {
-        gtaSettingsFilePath.setText("$MODULE_DIR$/src/GTASettings.txt");
-        assertTrue(pluginForm.isModified());
+    @Test
+    public void shouldApplyIsModifiedWhenGTASettingsFileChanges() throws Exception {
+        assertThat(getPluginForm().isModified()).isFalse();
+        gtaSettingsPath.setText("/usr/home");
+        assertThat(getPluginForm().isModified()).isTrue();
     }
 
-    public void testIsModifiedWhenGTASettingsFilePath() {
-        assertFalse(pluginForm.isModified());
-
-        gtaSettingsFilePath.setText("somefile.txt");
-        assertTrue(pluginForm.isModified());
-
-        gtaSettingsFilePath.setText(filePath);
-        assertTrue(pluginForm.isModified());
+    @Test
+    public void shouldApplyIsModifiedWhenTestClassesChanges() throws Exception {
+        assertThat(getPluginForm().isModified()).isFalse();
+        testClassesPath.setText("/usr/home");
+        assertThat(getPluginForm().isModified()).isTrue();
     }
 
-    public void testIsModifiedWhenSettingClassesDirectory() {
-        assertFalse(pluginForm.isModified());
-
-        classesPath.setText("C:\\some-dir");
-        assertTrue(pluginForm.isModified());
+    @Test
+    public void shouldApplyIsModifiedWhenProdClassesPathChanges() throws Exception {
+        assertThat(getPluginForm().isModified()).isFalse();
+        prodClassesPath.setText("/usr/home");
+        assertThat(getPluginForm().isModified()).isTrue();
     }
 
-    public void testSetData() {
-        SettingsApplicationComponent settingsUpdaterAction = mock(SettingsApplicationComponent.class);
-        when(settingsUpdaterAction.getGTASettingsFilePath()).thenReturn("C:\\GTASettings.txt");
-        when(settingsUpdaterAction.getClassesDirectory()).thenReturn("C:\\dev\\classes");
-
-        pluginForm.setData(settingsUpdaterAction);
-
-        assertThat(gtaSettingsFilePath.textEquals("C:\\GTASettings.txt"));
-        assertThat(classesPath.textEquals("C:\\dev\\classes"));
+    @Test
+    public void shouldSetTheProdClassesPathData() {
+        final SettingsApplicationComponent settingsUpdaterAction = mock(SettingsApplicationComponent.class);
+        when(settingsUpdaterAction.getProdClassesDirectory()).thenReturn("/usr/test");
+        GuiActionRunner.execute(new GuiTask() {
+            @Override protected void executeInEDT() throws Throwable {
+                getPluginForm().setData(settingsUpdaterAction);
+            }
+        });
+        assertThat(prodClassesPath.text()).isEqualTo("/usr/test");
     }
 
-    public void testGetData() {
-        gtaSettingsFilePath.setText("C:\\helloGTA");
-        classesPath.setText("C:\\helloGTAClasses");
-
-        SettingsApplicationComponent settingsUpdaterAction = mock(SettingsApplicationComponent.class);
-        pluginForm.getData(settingsUpdaterAction);
-        verify(settingsUpdaterAction).setGTASettingsFilePath("C:\\helloGTA");
-        verify(settingsUpdaterAction).setClassesDirectory("C:\\helloGTAClasses");
+    @Test
+    public void shouldSetTheTestClassesPathData() {
+        final SettingsApplicationComponent settingsUpdaterAction = mock(SettingsApplicationComponent.class);
+        when(settingsUpdaterAction.getClassesDirectory()).thenReturn("/usr/test");
+        GuiActionRunner.execute(new GuiTask() {
+            @Override protected void executeInEDT() throws Throwable {
+                getPluginForm().setData(settingsUpdaterAction);
+            }
+        });
+        assertThat(testClassesPath.text()).isEqualTo("/usr/test");
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        pluginForm = new PluginForm();
-        Panel pluginFormPanel = new Panel(pluginForm.getContentPane());
-        gtaSettingsFilePath = pluginFormPanel.getTextBox("txtFilePath");
-        classesPath = pluginFormPanel.getTextBox("classesPath");
-        filePath = getClass().getResource("GTASettings.txt").getFile();
+    @Test
+    public void shouldSetTheGTASettingsPathData() {
+        final SettingsApplicationComponent settingsUpdaterAction = mock(SettingsApplicationComponent.class);
+        when(settingsUpdaterAction.getSettingsFilePath()).thenReturn("/usr/test");
+        GuiActionRunner.execute(new GuiTask() {
+            @Override protected void executeInEDT() throws Throwable {
+                getPluginForm().setData(settingsUpdaterAction);
+            }
+        });
+        assertThat(gtaSettingsPath.text()).isEqualTo("/usr/test");
+    }
+
+    @Test
+    public void shouldGetTheProdClassPathData() throws Exception {
+        prodClassesPath.setText("usr/bin");
+        final SettingsApplicationComponent settingsUpdaterAction = mock(SettingsApplicationComponent.class);
+
+        GuiActionRunner.execute(new GuiTask() {
+            @Override protected void executeInEDT() throws Throwable {
+                getPluginForm().getData(settingsUpdaterAction);
+            }
+        });
+
+        verify(settingsUpdaterAction).setProdClassesDirectory("usr/bin");
+    }
+
+    @Test
+    public void shouldGetTheTestClassPathData() throws Exception {
+        testClassesPath.setText("usr/bin");
+        final SettingsApplicationComponent settingsUpdaterAction = mock(SettingsApplicationComponent.class);
+
+        GuiActionRunner.execute(new GuiTask() {
+            @Override protected void executeInEDT() throws Throwable {
+                getPluginForm().getData(settingsUpdaterAction);
+            }
+        });
+
+        verify(settingsUpdaterAction).setClassesDirectory("usr/bin");
+    }
+
+    @Test
+    public void shouldGetTheGTASettingsPathData() throws Exception {
+        gtaSettingsPath.setText("usr/bin");
+        final SettingsApplicationComponent settingsUpdaterAction = mock(SettingsApplicationComponent.class);
+
+        GuiActionRunner.execute(new GuiTask() {
+            @Override protected void executeInEDT() throws Throwable {
+                getPluginForm().getData(settingsUpdaterAction);
+            }
+        });
+
+        verify(settingsUpdaterAction).setSettingsFilePath("usr/bin");
+    }
+
+    @Override protected void onSetUp() {
+        mainPane = null;
+        application(PluginFormTest.class).start();
+        FrameFixture frame = findFrame(new GenericTypeMatcher<Frame>(Frame.class) {
+            protected boolean isMatching(Frame frame) {
+                return "Test frame".equals(frame.getTitle()) && frame.isShowing();
+            }
+        }).using(robot());
+        gtaSettingsPath = frame.textBox("txtFilePath");
+        prodClassesPath = frame.textBox("prodClassesPath");
+        testClassesPath = frame.textBox("classesPath");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override public void run() {
+                JFrame frame = new JFrame("Test frame");
+                frame.setSize(400, 500);
+                frame.setContentPane(getPluginForm().getContentPane());
+                frame.setVisible(true);
+            }
+        });
+    }
+
+    private static PluginForm mainPane;
+
+    private static PluginForm getPluginForm() {
+        if (mainPane == null) {
+            mainPane = new PluginForm();
+        }
+        return mainPane;
     }
 
 }

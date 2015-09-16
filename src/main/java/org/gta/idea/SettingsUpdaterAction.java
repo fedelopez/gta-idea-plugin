@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.DataConstantsEx;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiJavaFile;
@@ -65,20 +64,13 @@ public class SettingsUpdaterAction extends AnAction {
         } else {
             configureForClass(builder);
         }
-        builder.classesDirectory(classesDirectory());
+        builder.prodClassesDirectory(filterPath(applicationComponent.getProdClassesDirectory()));
+        builder.classesDirectory(filterPath(applicationComponent.getClassesDirectory()));
         return builder.build();
     }
 
-    private String classesDirectory() {
-        String classesDirectory = applicationComponent.getClassesDirectory();
-        if (classesDirectory == null || classesDirectory.trim().length() == 0) {
-            classesDirectory = CompilerPaths.getModuleOutputDirectory(module, false).getPath();
-        }
-        return filterPath(classesDirectory);
-    }
-
     private File gtaSettingsFile() {
-        String filePath = getGtaApplicationComponent().getGTASettingsFilePath();
+        String filePath = getGtaApplicationComponent().getSettingsFilePath();
         if (filePath == null || filePath.trim().isEmpty()) {
             return new File(DEFAULT_GTA_SETTINGS_FILE);
         }
@@ -87,10 +79,11 @@ public class SettingsUpdaterAction extends AnAction {
     }
 
     private String filterPath(String filePath) {
-        if (filePath.startsWith(MODULE_DIR)) {
-            filePath = filePath.replace(MODULE_DIR, FilenameUtils.getFullPath(module.getModuleFilePath()));
+        if (filePath != null && filePath.startsWith(MODULE_DIR)) {
+            String fullPath = FilenameUtils.getFullPath(module.getModuleFilePath());
+            filePath = filePath.replace(MODULE_DIR, fullPath);
         }
-        return filePath;
+        return FilenameUtils.normalizeNoEndSeparator(filePath);
     }
 
     private void configureForPackage(SettingsUpdater.Builder builder) {

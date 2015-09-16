@@ -11,6 +11,7 @@ public class PluginForm {
     private JTextField txtFilePath;
     private JPanel contentPane;
     private JTextField classesPath;
+    private JTextField prodClassesPath;
     private boolean isModified;
 
     public PluginForm() {
@@ -20,6 +21,7 @@ public class PluginForm {
     private void initListeners() {
         txtFilePath.getDocument().addDocumentListener(new ApplyIsModifiedListener());
         classesPath.getDocument().addDocumentListener(new ApplyIsModifiedListener());
+        prodClassesPath.getDocument().addDocumentListener(new ApplyIsModifiedListener());
     }
 
     public JPanel getContentPane() {
@@ -27,13 +29,15 @@ public class PluginForm {
     }
 
     public void setData(SettingsApplicationComponent data) {
-        txtFilePath.setText(data.getGTASettingsFilePath());
+        txtFilePath.setText(data.getSettingsFilePath());
         classesPath.setText(data.getClassesDirectory());
+        prodClassesPath.setText(data.getProdClassesDirectory());
     }
 
     public void getData(SettingsApplicationComponent data) {
-        data.setGTASettingsFilePath(txtFilePath.getText());
+        data.setSettingsFilePath(txtFilePath.getText());
         data.setClassesDirectory(classesPath.getText());
+        data.setProdClassesDirectory(prodClassesPath.getText());
     }
 
     public boolean isModified() {

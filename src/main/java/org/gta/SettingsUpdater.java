@@ -22,6 +22,7 @@ public class SettingsUpdater {
     private final String packageName;
     private final String className;
     private final String methodName;
+    private final String prodClassesRoot;
     private final String classesRoot;
 
     private final GTARunTestType runTestType;
@@ -34,6 +35,7 @@ public class SettingsUpdater {
         this.packageName = builder.packageName;
         this.className = builder.className == null ? "" : builder.className;
         this.methodName = builder.methodName == null ? "" : builder.methodName;
+        this.prodClassesRoot = builder.prodClassesRootDir;
         this.classesRoot = builder.classesRootDir;
     }
 
@@ -44,6 +46,7 @@ public class SettingsUpdater {
     }
 
     private void doUpdate() {
+        updateProdClassesRootBlock();
         updateClassesRootBlock();
         switch (runTestType) {
             case RUN_FUNCTION_TESTS:
@@ -86,6 +89,10 @@ public class SettingsUpdater {
             return packageName.substring(0, packageName.indexOf(".test"));
         }
         return packageName;
+    }
+
+    private void updateProdClassesRootBlock() {
+        properties.setProperty(GTAConstants.PROD_ROOT, prodClassesRoot);
     }
 
     private void updateClassesRootBlock() {
@@ -151,6 +158,7 @@ public class SettingsUpdater {
         private String className;
         private String methodName;
         private String classesRootDir;
+        private String prodClassesRootDir;
 
         public SettingsUpdater build() throws IllegalStateException {
             checkInvariants();
@@ -189,6 +197,11 @@ public class SettingsUpdater {
 
         public Builder classesDirectory(String classesRootDir) {
             this.classesRootDir = classesRootDir;
+            return this;
+        }
+
+        public Builder prodClassesDirectory(String prodClassesRootDir) {
+            this.prodClassesRootDir = prodClassesRootDir;
             return this;
         }
     }
